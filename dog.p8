@@ -12,7 +12,13 @@ function _update()
   home:update()
  else
 	 if not lcm then
-	  lvls[lvl]:update()
+	  dog:update()
+	  for i in all(items) do
+		  i:update(dog)
+		 end
+		 for h in all(human_table) do
+		  h:update()
+		 end
 	 end
 	 if wcm or
 	 lcm then
@@ -26,12 +32,11 @@ end
 
 function _draw()
  cls()
- map(offset.x,offset.y)
- if lvl<1 then
+ if lvl<1 then 
+  map(offset.x,offset.y)
   home:draw()
  else
   if show_win_message then
-   cls()
 		 print("you win!",50,60)
 		 print("press v to return",
 		  32,
@@ -39,14 +44,20 @@ function _draw()
 		 return
 	 end
 	 if lcm then
-	  cls()
 	  print("bad dog!!",50,60)
 	  print("press v to return",
 	   32,
 	   70)
 	  return
 	 end
-  lvls[lvl]:draw()
+  map(offset.x,offset.y)
+  dog:draw()
+	 for i in all(items) do
+	  i:draw()
+	 end
+	 for h in all(human_table) do
+	  h:draw()
+	 end
  end
 end
 -->8
@@ -296,8 +307,8 @@ end
 
 -- human facing
 humans={
-bob=128,
-linda=144
+	bob=128,
+	linda=144
 }
 
 hf = {
@@ -426,6 +437,8 @@ end
 -->8
 -- levels
 lvl=0
+items={}
+human_table={}
 
 home={
  init=function(self)
@@ -437,6 +450,8 @@ home={
    x=0,
    y=16
   }
+  human_table={}
+  items={}
  end,
  update=function(self)
   dog:update()
@@ -476,31 +491,24 @@ lvls={
 			offset.x=0
 			offset.y=0
 			dog=init_dog(8,15)
+				 
+			items={
+				treat_factory(
+				 8*5,
+				 8*2,
+				 treats.steak)
+			}
 			
-			steak=treat_factory(
-			 8*5,
-			 8*2,
-			 treats.steak)
-			bob=human_factory(
-			 8*2,
-			 8*1,
-			 humans.bob)
-			linda=human_factory(
-			 8*5,
-			 8*6,
-			 humans.linda)
-  end,
-  update=function(self)
-		 dog:update()
-		 steak:update(dog)
-		 bob:update()
-		 linda:update()
-  end,
-  draw=function(self) 
-		 dog:draw()
-		 steak:draw()
-		 bob:draw()
-		 linda:draw()
+			human_table={
+				human_factory(
+					 8*2,
+					 8*1,
+					 humans.bob),
+				human_factory(
+					 8*5,
+					 8*6,
+					 humans.linda)
+			}
   end
  },
  -- level 2
@@ -513,25 +521,18 @@ lvls={
 			offset.x=16
 			offset.y=0
 			dog=init_dog(0,5)
-			butter=treat_factory(
+			items={
+			 treat_factory(
 			 8*12,
 			 8*14,
 			 treats.butter)
-			bob=human_factory(
+		 }
+		 human_table={
+		  human_factory(
 			 8*11,
 			 8*5,
 			 humans.bob)
-  end,
-  update=function(self)
-		 dog:update()
-		 butter:update(dog)
-		 bob:update()
-  end,
-  
-  draw=function(self)
-		 dog:draw()
-		 butter:draw()
-		 bob:draw()
+		 }
   end
  }
 }
