@@ -4,15 +4,23 @@ __lua__
 -- main
 
 function _init()
- lvls[1]:init()
+ home:init()
 end
 
 function _update()
- lvls[1]:update()
+ if lvl<1 then
+  home:update()
+ else
+  lvls[lvl]:update()
+ end
 end
 
 function _draw()
- lvls[1]:draw()
+ if lvl<1 then
+  home:draw()
+ else 
+  lvls[lvl]:draw()
+ end
 end
 -->8
 -- dog
@@ -67,15 +75,19 @@ dog_facing = {
  }
 }
 
-dog = {
- x = 8*8,
- y = 8*15,
- state = dog_state[1],
- frame = 0,
- f_timer = 0.2,
- facing = dog_facing.right,
- has_treat = false,
-}
+function init_dog(x,y)
+	return {
+	 x = 8*x,
+	 y = 8*y,
+	 state = dog_state[1],
+	 frame = 0,
+	 f_timer = 0.2,
+	 facing = dog_facing.right,
+	 has_treat = false,
+	}
+end
+
+dog=init_dog(0,0)
 
 function dmov()
  
@@ -163,14 +175,22 @@ flags={
 	human=2
 }
 
+function czone(o,x,y,w,h)
+ local ox=o.x/8
+ local oy=o.y/8
+ return ox >= x and
+  ox < x+w and
+  oy >= y and
+  oy < y+h
+end
+
 function cflag(o,flag)
- local ct=false
- local cb=false
  
- local x1=o.x/8
- local y1=o.y/8
- local x2=(o.x+7)/8
- local y2=(o.y+7)/8
+ local x1=o.x/8+offset.x
+ local y1=o.y/8+offset.y
+ local x2=(o.x+7)/8+offset.x
+ local y2=(o.y+7)/8+offset.y
+ 
  local a=fget(mget(x1,y1),flag)
  local b=fget(mget(x1,y2),flag)
  local c=fget(mget(x2,y1),flag)
@@ -379,16 +399,47 @@ function face_rnd()
 end
 -->8
 -- levels
+lvl=0
 
 home={
  init=function(self)
+  show_win_message=false
+		lcm=false
+		wcm=false
+  dog=init_dog(1,14)
+  offset={
+   x=0,
+   y=16
+  }
  end,
  update=function(self)
+  dmov()
+  check_lvls()
  end,
  draw=function(self)
-  map()
+  cls()
+  map(offset.x,offset.y)
+  ddraw()
+  print((dog.x/8).." "..dog.y/8)
  end,
 }
+
+function check_lvls()
+ if czone(dog,3,11,1,2) then
+  lvl=1
+ elseif czone(dog,3,5,1,2) then
+  lvl=2
+ elseif czone(dog,11,4,2,2) then
+  lvl=3
+ elseif czone(dog,11,9,2,2) then
+  lvl=4
+ else
+  lvl=0
+ end
+ if lvl > 0 then
+  lvls[lvl]:init()
+ end
+end
 
 lvls={
  -- level 1
@@ -398,6 +449,9 @@ lvls={
 			lcm=false
 			wcm=false
 			music(0)
+			offset.x=0
+			offset.y=0
+			dog=init_dog(8,15)
 			
 			steak=treat_factory(
 			 8*5,
@@ -419,6 +473,13 @@ lvls={
 			 tdog(steak,dog)
 			 bob:update()
 			 linda:update()
+		 end
+		 if show_win_message or
+		 lcm then
+		  if btnp(❎) then
+		   lvl=0
+		   home:init()
+		  end
 		 end
   end,
   draw=function(self)
@@ -686,7 +747,7 @@ dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
 
 __gff__
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020200000000000000000000000000000000000000000000000000000000000000000000010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001
-0404040000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0404040000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 4b4c4c4c4c4c4c4c4c4d404b4c4c4c4d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 5b5c5c5c5c5c5c6c6c6d416b6c6c5c5d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
